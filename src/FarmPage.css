@@ -15,7 +15,7 @@
 .farm-content {
   width: 1193px;
   margin: 0 auto 60px auto;
-  padding: 80px 0;
+  padding: 40px 0;
   display: flex;
   flex-direction: column;
   gap: 40px;

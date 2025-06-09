@@ -2,6 +2,7 @@ import React from 'react';
 import Header from './components/Header';
 import HomeContent from './components/HomeContent';
 import Footer from './components/Footer';
+import FooterLine from './components/FooterLine';
 import './App.css';
 
 const MainPage: React.FC = () => {
@@ -10,7 +11,7 @@ const MainPage: React.FC = () => {
       <Header />
       <div className="navigation-line"></div>
       <HomeContent />
-      <div className="footer-line"></div>
+      <FooterLine />
       <Footer />
     </div>
   );
