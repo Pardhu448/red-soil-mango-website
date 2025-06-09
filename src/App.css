@@ -1,0 +1,33 @@
+.app {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (max-width: 768px) {
+  .app {
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+/* Navigation line moved to Header.css */
+
+.footer-line {
+  position: absolute;
+  left: 0;
+  top: 1471px;
+  width: 1920px;
+  height: 4px;
+  background-color: #89472F;
+}
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto:wght@700&display=swap');
