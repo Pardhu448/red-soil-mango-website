@@ -1,7 +1,6 @@
 import React from 'react';
 import Header from './components/Header';
-import MangoFooter from './components/MangoFooter';
-import MangoFooterLine from './components/MangoFooterLine';
+import Footer from './components/Footer';
 import './MangoPage.css';
 import foilerSprayImage from './images/foiler-spray.png';
 import calciumExtractImage from './images/calcium-extract.png';
@@ -14,7 +13,6 @@ const MangoPage: React.FC = () => {
   return (
     <div className="mango-page">
       <Header />
-      <div className="navigation-line"></div>
 
       {/* Story Section */}
       <div className="paragraph1">
@@ -102,8 +100,7 @@ const MangoPage: React.FC = () => {
         </p>
       </div>
 
-      <MangoFooterLine />
-      <MangoFooter />
+      <Footer />
     </div>
   );
 };

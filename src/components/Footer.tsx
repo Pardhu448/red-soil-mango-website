@@ -1,15 +1,10 @@
 import React from 'react';
 import './Footer.css';
-import navigationImage from '../images/navigation-image.png';
 
 const Footer: React.FC = () => {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <div className="footer-image">
-          <img src={navigationImage} alt="Farm Navigation" />
-        </div>
-
         <div className="footer-links">
           <div className="links-column footer-links1">
             <h3>Other Useful Links</h3>
@@ -28,6 +23,14 @@ const Footer: React.FC = () => {
               <li><a href="#">Testimonials</a></li>
               <li><a href="#">How to Reach Farm ?</a></li>
             </ul>
+          </div>
+        </div>
+        <div className="contact-info">
+          <div className="copyright">
+            © 2025 Red Soil Mango Farm. All Rights Reserved.
+          </div>
+          <div className="email">
+            <a href="mailto:support@redsoilmango.com">support@redsoilmango.com</a>
           </div>
         </div>
       </div>

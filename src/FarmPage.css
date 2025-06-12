@@ -5,25 +5,19 @@
   background-color: #FFFFFF;
 }
 
-.navigation-line {
-  width: 1200px;
-  height: 8.47px;
-  background-color: #89472F;
-  margin: 0 auto;
-}
-
 .farm-content {
-  width: 1193px;
-  margin: 0 auto 60px auto;
-  padding: 40px 0;
+  width: 100%;
+  max-width: 1193px;
+  margin: 0 auto;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 20px;
 }
 
 .farm-description {
   font-family: 'Inter', sans-serif;
-  font-size: 24.3px;
+  font-size: 16px;
   line-height: 1.5;
   color: #828282;
 }
@@ -31,21 +25,22 @@
 .farm-heading {
   font-family: 'Roboto', sans-serif;
   font-weight: 700;
-  font-size: 24px;
+  font-size: 20px;
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   color: #000000;
 }
 
 .farm-image-container {
-  width: 797px;
+  width: 100%;
   margin: 0 auto;
-  padding: 39px 0;
+  padding: 20px 0;
 }
 
 .farm-image {
   width: 100%;
-  height: 600px;
+  height: auto;
+  max-height: 400px;
   object-fit: cover;
 }
 
@@ -54,4 +49,28 @@
   height: 4px;
   background-color: #89472F;
   margin-top: auto;
+}
+
+@media (min-width: 768px) {
+  .farm-content {
+    padding: 40px;
+    gap: 40px;
+  }
+  
+  .farm-description {
+    font-size: 20px;
+  }
+
+  .farm-heading {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .farm-image-container {
+    padding: 39px 0;
+  }
+
+  .farm-image {
+    max-height: 600px;
+  }
 }

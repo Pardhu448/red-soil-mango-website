@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
 import logo from '../images/logo.svg';
@@ -7,32 +7,48 @@ import instagramIcon from '../images/instagram-icon.svg';
 import whatsappIcon from '../images/whatsapp-icon.svg';
 
 const Header: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <header className="header">
-      <div className="logo">
-        <Link to="/home">
-          <img src={logo} alt="Red Soil Mango Logo" />
-        </Link>
+      <div className="header-top">
+        <div className="logo">
+          <Link to="/home">
+            <img src={logo} alt="Red Soil Mango Logo" />
+          </Link>
+        </div>
       </div>
-      <div className="nav-container">
+
+      <div className="header-bottom">
+        <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div className={`nav-container ${isMenuOpen ? 'active' : ''}`}>
         <nav className="nav-menu">
           <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/farm">Farm</a></li>
-            <li><a href="/mango">Mango</a></li>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <li><a href="#">Order</a></li>
-            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-            <li><a href="#">Contact</a></li>
+            <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
+            <li><Link to="/farm" onClick={() => setIsMenuOpen(false)}>Farm</Link></li>
+            <li><Link to="/mango" onClick={() => setIsMenuOpen(false)}>Mango</Link></li>
+            <li><Link to="/order" onClick={() => setIsMenuOpen(false)}>Order</Link></li>
+            <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
+            <li className="social-icon-item">
+              <a href="#"><img src={youtubeIcon} alt="YouTube" /></a>
+            </li>
+            <li className="social-icon-item">
+              <a href="#"><img src={instagramIcon} alt="Instagram" /></a>
+            </li>
+            <li className="social-icon-item">
+              <a href="#"><img src={whatsappIcon} alt="WhatsApp" /></a>
+            </li>
           </ul>
         </nav>
-        <div className="social-icons">
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <a href="#"><img src={youtubeIcon} alt="YouTube" /></a>
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <a href="#"><img src={instagramIcon} alt="Instagram" /></a>
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <a href="#"><img src={whatsappIcon} alt="WhatsApp" /></a>
         </div>
       </div>
     </header>

@@ -1,24 +1,46 @@
-.app {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
+:root {
+  --primary-color: #89472F;
+  --text-color: #333;
+  --text-light: #828282;
+  --bg-light: #f9f9f9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
 }
 
 body {
   margin: 0;
+  padding: 0;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.app {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Minimum tap target size for mobile */
+a, button {
+  min-width: 48px;
+  min-height: 48px;
 }
 
 @media (max-width: 768px) {
-  .app {
-    width: 100%;
-    overflow-x: hidden;
+  html {
+    font-size: 14px;
   }
 }
 
-/* Navigation line moved to Header.css */
-
 /* Import fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@700&display=swap');
