@@ -32,7 +32,7 @@ const HomeContent: React.FC = () => {
             For the first time we wanted to share naturally ripened mangoes 
             with everyone. A traditional ripening of matured fruit is done 
             with hay. You can order mangoes in 3kg, 5kg or 10kg packs which 
-            will be delivered to your home
+            can be delivered to your home
           </p>
         </div>
       </div>

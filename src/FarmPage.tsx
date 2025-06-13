@@ -14,7 +14,7 @@ const FarmPage: React.FC = () => {
         <div className="farm-description">
           <h3 className="farm-heading">About our farm ... </h3>
           <p>
-            It is a small four acre 35 years old mango orchard with around 250 mango trees of Benishahn/Banginapally variety. 
+            It is a small four acre mango orchard with around 250 mango trees of Benishahn/Banginapally variety. 
             Geographically, farm is at a lower altitude compared to the landscape around. It is sitting on a 20 feet deep 
             red-clay soil on top of a laterite rock deposit, while the area surrounding it is rocky with shallow soil deposit. 
             East side of the farm is protected from north-eastern winds by tall teak trees along with wildly grown shrubs 
