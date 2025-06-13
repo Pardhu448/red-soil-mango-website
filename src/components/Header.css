@@ -119,6 +119,12 @@
 
   .menu-toggle {
     display: flex;
+    width: 12px;
+    height: 12px;
+  }
+
+  .menu-toggle span {
+    height: 1.5px;
   }
 
   .nav-menu ul {
