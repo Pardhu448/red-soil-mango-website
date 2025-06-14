@@ -1,0 +1,13 @@
+runtime: nodejs20
+service: default
+
+handlers:
+- url: /(.*\.(gif|png|jpg|jpeg|svg|ico|css|js|json))$
+  static_files: build/\1
+  upload: build/(.*\.(gif|png|jpg|jpeg|svg|ico|css|js|json))$
+  secure: always
+
+- url: /.*
+  static_files: build/index.html
+  upload: build/index.html
+  secure: always
