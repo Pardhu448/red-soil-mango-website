@@ -11,3 +11,7 @@ handlers:
   static_files: build/index.html
   upload: build/index.html
   secure: always
+
+- url: /googleXXXXXXXX.html
+  static_files: googleXXXXXXXX.html
+  upload: googleXXXXXXXX.html
