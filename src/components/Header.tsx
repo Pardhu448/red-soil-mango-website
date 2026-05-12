@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
-import logo from '../images/logo.svg';
+import logo from '../images/logo-text.svg';
 import youtubeIcon from '../images/youtube-icon.svg';
 import instagramIcon from '../images/instagram-icon.svg';
 import whatsappIcon from '../images/whatsapp-icon.svg';
