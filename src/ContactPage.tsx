@@ -12,7 +12,7 @@ const ContactPage: React.FC = () => {
         
         <div className="address-section">
           <div className="address-card">
-            <h2>Hyderabad Office</h2>
+            <h2>Hyderabad</h2>
             <address>
               Partha<br />
               Rukmini Lake View Apartments<br />

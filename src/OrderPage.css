@@ -27,6 +27,36 @@
   }
 }
 
+.price-section {
+  background-color: #FFF9F0;
+  padding: 20px 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.price-section h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #89472F;
+  margin-bottom: 8px;
+}
+
+.price-amount {
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.price-unit {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666;
+}
+
 .order-section {
   background-color: #FFF9F0;
   padding: 30px;

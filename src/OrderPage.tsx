@@ -7,6 +7,14 @@ import whatsappIcon from './images/whatsapp-icon.svg';
 // Apps Script Web App URL. Set REACT_APP_ORDER_ENDPOINT in a .env file.
 const ORDER_ENDPOINT = process.env.REACT_APP_ORDER_ENDPOINT || '';
 
+// Comma-separated 2026 price values from REACT_APP_PRICE_2026 (first value is
+// the price per kg).
+const PRICE_2026 = (process.env.REACT_APP_PRICE_2026 || '')
+  .split(',')
+  .map((v) => v.trim())
+  .filter(Boolean);
+const PRICE_PER_KG = PRICE_2026[0] || '';
+
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
 interface OrderForm {
@@ -83,7 +91,7 @@ const OrderPage: React.FC = () => {
         method: 'POST',
         // text/plain avoids a CORS preflight against the Apps Script endpoint.
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, pricePerKg: PRICE_PER_KG }),
       });
 
       const result = await response.json();
@@ -109,6 +117,15 @@ const OrderPage: React.FC = () => {
       <Header />
       <main className="order-content">
         <h1>Order Mangoes</h1>
+
+        {PRICE_PER_KG && (
+          <div className="price-section">
+            <h2>2026 Price</h2>
+            <p className="price-amount">
+              ₹{PRICE_PER_KG} <span className="price-unit">per kg</span>
+            </p>
+          </div>
+        )}
 
         <div className="order-section">
           <div className="order-method">

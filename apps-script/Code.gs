@@ -45,7 +45,7 @@ function appendToSheet_(data) {
     sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Orders');
     sheet.appendRow([
       'Timestamp', 'Name', 'Phone', 'Pack size', 'Quantity',
-      'Fulfilment', 'Address', 'Location link', 'Notes',
+      'Fulfilment', 'Address', 'Location link', 'Notes', 'Price/kg',
     ]);
   }
   sheet.appendRow([
@@ -58,6 +58,7 @@ function appendToSheet_(data) {
     data.address || '',
     data.locationLink || '',
     data.notes || '',
+    data.pricePerKg || '',
   ]);
 
   // A phone like "+91 ..." starts with "+", which Sheets would treat as a
@@ -78,6 +79,7 @@ function sendWhatsApp_(data) {
     'Name: ' + (data.name || '-') + '\n' +
     'Phone: ' + (data.phone || '-') + '\n' +
     'Pack: ' + (data.packSize || '-') + ' x ' + (data.quantity || '-') + '\n' +
+    (data.pricePerKg ? 'Price/kg: ₹' + data.pricePerKg + '\n' : '') +
     'Fulfilment: ' + (data.fulfilment || '-') + '\n' +
     (data.address ? 'Address: ' + data.address + '\n' : '') +
     (data.locationLink ? 'Location: ' + data.locationLink + '\n' : '') +
