@@ -68,9 +68,21 @@ gcloud app browse
 
 - Always run `npm run build` **before** `gcloud app deploy`. Deploying with a
   stale or missing `build/` ships old or broken output.
-- The Google site-verification handler in `app.yaml`
-  (`googleXXXXXXXX.html`) is a placeholder — update the filename to match the
-  actual verification file before relying on it.
+
+## Google site verification
+
+If you need to verify the domain for Google Search Console, use one of these
+two methods — there is **no `app.yaml` handler** for verification:
+
+- **DNS** — add the `TXT` record Google provides to your domain's DNS settings.
+  Recommended, since it is independent of how the site is deployed.
+- **HTML meta tag** — paste the `<meta name="google-site-verification" ...>`
+  tag Google provides into the `<head>` of `public/index.html`, then rebuild
+  and redeploy.
+
+Avoid the HTML *file upload* method: the `/.*` catch-all in `app.yaml` routes
+every unknown path to `index.html`, so a standalone verification file would
+not be served.
 
 ## Project structure
 
