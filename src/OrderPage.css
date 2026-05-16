@@ -151,6 +151,12 @@
   color: #333;
 }
 
+.field-error {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: #c0392b;
+}
+
 .honeypot {
   position: absolute;
   left: -9999px;

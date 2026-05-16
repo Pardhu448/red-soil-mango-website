@@ -51,13 +51,19 @@ function appendToSheet_(data) {
   sheet.appendRow([
     new Date(),
     data.name || '',
-    data.phone || '',
+    '', // Phone is written separately below as plain text.
     data.packSize || '',
     data.quantity || '',
     data.fulfilment || '',
     data.address || '',
     data.notes || '',
   ]);
+
+  // A phone like "+91 ..." starts with "+", which Sheets would treat as a
+  // formula ("Formula parse error"). Force the cell to plain-text format.
+  var phoneCell = sheet.getRange(sheet.getLastRow(), 3);
+  phoneCell.setNumberFormat('@');
+  phoneCell.setValue(String(data.phone || ''));
 }
 
 function sendWhatsApp_(data) {

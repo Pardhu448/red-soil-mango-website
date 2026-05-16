@@ -61,6 +61,12 @@ const OrderPage: React.FC = () => {
       return;
     }
 
+    if (form.phone.replace(/\D/g, '').length !== 10) {
+      setStatus('error');
+      setErrorMessage('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
     if (form.fulfilment === 'Delivery' && !form.address.trim()) {
       setStatus('error');
       setErrorMessage('Please enter a delivery address.');
@@ -92,6 +98,9 @@ const OrderPage: React.FC = () => {
       );
     }
   };
+
+  const phoneInvalid =
+    form.phone.trim() !== '' && form.phone.replace(/\D/g, '').length !== 10;
 
   return (
     <div className="order-page">
@@ -146,11 +155,18 @@ const OrderPage: React.FC = () => {
                   id="phone"
                   name="phone"
                   type="tel"
+                  inputMode="numeric"
                   value={form.phone}
                   onChange={handleChange}
-                  placeholder="+91 ..."
+                  placeholder="10-digit mobile number"
+                  aria-invalid={phoneInvalid}
                   required
                 />
+                {phoneInvalid && (
+                  <span className="field-error">
+                    Please enter a valid 10-digit mobile number.
+                  </span>
+                )}
               </div>
 
               <div className="form-grid">
@@ -194,7 +210,7 @@ const OrderPage: React.FC = () => {
                       checked={form.fulfilment === 'Delivery'}
                       onChange={handleChange}
                     />
-                    Delivery (Uber Parcel)
+                    Delivery (Local Parcel)
                   </label>
                   <label className="radio-option">
                     <input
@@ -230,6 +246,7 @@ const OrderPage: React.FC = () => {
                   rows={2}
                   value={form.notes}
                   onChange={handleChange}
+                  placeholder="Can I pick up at a specific time..."
                 />
               </div>
 
