@@ -39,7 +39,7 @@ const Header: React.FC = () => {
             <li><Link to="/order" onClick={() => setIsMenuOpen(false)}>Order</Link></li>
             <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
             <li className="social-icon-item">
-              <a href="https://youtube.com/@redsoilmango?si=qPiNPNqpJqlF4Q8P" target="_blank" rel="noopener noreferrer"><img src={youtubeIcon} alt="YouTube" /></a>
+              <a href="https://www.youtube.com/playlist?list=PLtP19itq254Isy4LkdthdLRFz42Vfl8OT" target="_blank" rel="noopener noreferrer"><img src={youtubeIcon} alt="YouTube" /></a>
             </li>
             <li className="social-icon-item">
               <a href="#"><img src={instagramIcon} alt="Instagram" /></a>
