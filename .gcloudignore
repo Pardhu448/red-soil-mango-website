@@ -1,0 +1,19 @@
+# Files NOT uploaded to App Engine on `gcloud app deploy`.
+# Note: when this file exists, gcloud ignores .gitignore — so `build/`
+# (which .gitignore excludes) IS uploaded, as app.yaml serves from it.
+
+.git
+.gitignore
+.gcloudignore
+
+# Reinstalled by App Engine from package.json
+node_modules/
+
+# Source and tooling — only the compiled build/ is served
+src/
+public/
+coverage/
+apps-script/
+.env
+*.md
+README.md
