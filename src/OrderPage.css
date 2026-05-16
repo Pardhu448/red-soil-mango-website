@@ -14,10 +14,17 @@
 
 .order-page h1 {
   font-family: 'Inter', sans-serif;
-  font-size: 28px;
-  color: #89472F;
-  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #000000;
+  text-align: left;
   margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+  .order-page h1 {
+    font-size: 28px;
+  }
 }
 
 .order-section {
@@ -76,8 +83,141 @@
   .delivery-options {
     flex-direction: row;
   }
-  
+
   .delivery-option {
     flex: 1;
+  }
+}
+
+/* Order form */
+.order-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: #89472F;
+  font-size: 15px;
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid #d8c4b4;
+  border-radius: 6px;
+  background-color: #fff;
+}
+
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+  outline: none;
+  border-color: #89472F;
+}
+
+.form-row textarea {
+  resize: vertical;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  color: #333;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.order-submit {
+  align-self: flex-start;
+  background-color: #89472F;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.order-submit:hover:not(:disabled) {
+  background-color: #6f3825;
+}
+
+.order-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.order-feedback {
+  font-family: 'Inter', sans-serif;
+}
+
+.order-feedback.success h3 {
+  color: #89472F;
+  margin-bottom: 8px;
+}
+
+.order-feedback.error {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.order-link-button {
+  margin-top: 12px;
+  background: none;
+  border: 1px solid #89472F;
+  color: #89472F;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+@media (min-width: 768px) {
+  .form-grid {
+    flex-direction: row;
+  }
+
+  .form-grid .form-row {
+    flex: 1;
+  }
+
+  .radio-group {
+    flex-direction: row;
+    gap: 24px;
   }
 }

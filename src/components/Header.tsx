@@ -45,7 +45,7 @@ const Header: React.FC = () => {
               <a href="#"><img src={instagramIcon} alt="Instagram" /></a>
             </li>
             <li className="social-icon-item">
-              <a href="https://wa.me/916362316305" target="_blank" rel="noopener noreferrer"><img src={whatsappIcon} alt="WhatsApp" /></a>
+              <a href="https://wa.me/919346502175" target="_blank" rel="noopener noreferrer"><img src={whatsappIcon} alt="WhatsApp" /></a>
             </li>
           </ul>
         </nav>

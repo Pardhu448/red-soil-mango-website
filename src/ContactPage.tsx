@@ -14,7 +14,7 @@ const ContactPage: React.FC = () => {
           <div className="address-card">
             <h2>Hyderabad Office</h2>
             <address>
-              Red Soil Mango<br />
+              Partha<br />
               Rukmini Lake View Apartments<br />
               Methodist Colony, Kundanbagh<br />
               Begumpet, Hyderabad - 500016
@@ -24,8 +24,7 @@ const ContactPage: React.FC = () => {
           <div className="address-card">
             <h2>Picharagad</h2>
             <address>
-              Red Soil Mango Processing Centre<br />
-              c/o Ramulu C<br />
+              Ramulu.C<br />
               1-6A25/1, Kothillu<br />
               Picharagad Village, Kohir Mandal<br />
               Sangareddy District, Telangana - 502210

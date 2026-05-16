@@ -14,10 +14,17 @@
 
 .contact-page h1 {
   font-family: 'Inter', sans-serif;
-  font-size: 28px;
-  color: #89472F;
-  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #000000;
+  text-align: left;
   margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+  .contact-page h1 {
+    font-size: 28px;
+  }
 }
 
 .address-section {

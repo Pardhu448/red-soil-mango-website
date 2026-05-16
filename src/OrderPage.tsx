@@ -1,39 +1,264 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import './OrderPage.css';
 import whatsappIcon from './images/whatsapp-icon.svg';
-import parcelIcon from './images/packageWithHay.jpg';
+
+// Apps Script Web App URL. Set REACT_APP_ORDER_ENDPOINT in a .env file.
+const ORDER_ENDPOINT = process.env.REACT_APP_ORDER_ENDPOINT || '';
+
+type Status = 'idle' | 'submitting' | 'success' | 'error';
+
+interface OrderForm {
+  name: string;
+  phone: string;
+  packSize: string;
+  quantity: string;
+  fulfilment: 'Pickup' | 'Delivery';
+  address: string;
+  notes: string;
+  // Honeypot field — should stay empty for real users.
+  website: string;
+}
+
+const initialForm: OrderForm = {
+  name: '',
+  phone: '',
+  packSize: '5 kg',
+  quantity: '1',
+  fulfilment: 'Delivery',
+  address: '',
+  notes: '',
+  website: '',
+};
 
 const OrderPage: React.FC = () => {
+  const [form, setForm] = useState<OrderForm>(initialForm);
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Honeypot: silently treat bot submissions as success.
+    if (form.website) {
+      setStatus('success');
+      return;
+    }
+
+    if (!ORDER_ENDPOINT) {
+      setStatus('error');
+      setErrorMessage(
+        'Ordering is not configured yet. Please contact us on WhatsApp instead.'
+      );
+      return;
+    }
+
+    if (form.fulfilment === 'Delivery' && !form.address.trim()) {
+      setStatus('error');
+      setErrorMessage('Please enter a delivery address.');
+      return;
+    }
+
+    setStatus('submitting');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch(ORDER_ENDPOINT, {
+        method: 'POST',
+        // text/plain avoids a CORS preflight against the Apps Script endpoint.
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(form),
+      });
+
+      const result = await response.json();
+      if (result.result === 'success') {
+        setStatus('success');
+        setForm(initialForm);
+      } else {
+        throw new Error(result.message || 'Submission failed');
+      }
+    } catch (err) {
+      setStatus('error');
+      setErrorMessage(
+        'Something went wrong submitting your order. Please try again or contact us on WhatsApp.'
+      );
+    }
+  };
+
   return (
     <div className="order-page">
       <Header />
       <main className="order-content">
         <h1>Order Mangoes</h1>
-      
-      <div className="order-section">
-        <div className="order-method">
-          <img src={whatsappIcon} alt="WhatsApp" className="whatsapp-icon" />
-          <p>
-            To order mangoes please contact us over WhatsApp at: 
-            <a href="https://wa.me/916362316305" className="phone-number"> +91 6362316305</a>
-          </p>
-        </div>
 
-        <div className="delivery-options">
-          <div className="delivery-option">
-            <h3>Pickup Option</h3>
-            <p>You can directly pick mangoes from Kundanbagh (Begumpet)</p>
+        <div className="order-section">
+          <div className="order-method">
+            <img src={whatsappIcon} alt="WhatsApp" className="whatsapp-icon" />
+            <p>
+              Prefer to chat? Message us on WhatsApp at:
+              <a href="https://wa.me/919346502175" className="phone-number">
+                {' '}
+                +91 9346502175
+              </a>
+            </p>
           </div>
 
-          <div className="delivery-option">
-            <img src={parcelIcon} alt="Parcel Delivery" className="parcel-icon" />
-            <h3>Delivery Option</h3>
-            <p>Make an order and we can arrange Uber Parcel delivery</p>
-          </div>
+          {status === 'success' ? (
+            <div className="order-feedback success">
+              <h3>Thank you for your order!</h3>
+              <p>
+                We have received your request and will reach out on WhatsApp to
+                confirm the details.
+              </p>
+              <button
+                type="button"
+                className="order-link-button"
+                onClick={() => setStatus('idle')}
+              >
+                Place another order
+              </button>
+            </div>
+          ) : (
+            <form className="order-form" onSubmit={handleSubmit}>
+              <div className="form-row">
+                <label htmlFor="name">Name *</label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <label htmlFor="phone">Phone (WhatsApp) *</label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="+91 ..."
+                  required
+                />
+              </div>
+
+              <div className="form-grid">
+                <div className="form-row">
+                  <label htmlFor="packSize">Pack size *</label>
+                  <select
+                    id="packSize"
+                    name="packSize"
+                    value={form.packSize}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="3 kg">3 kg</option>
+                    <option value="5 kg">5 kg</option>
+                    <option value="10 kg">10 kg</option>
+                  </select>
+                </div>
+
+                <div className="form-row">
+                  <label htmlFor="quantity">Number of packs *</label>
+                  <input
+                    id="quantity"
+                    name="quantity"
+                    type="number"
+                    min="1"
+                    value={form.quantity}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <label>Fulfilment *</label>
+                <div className="radio-group">
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="fulfilment"
+                      value="Delivery"
+                      checked={form.fulfilment === 'Delivery'}
+                      onChange={handleChange}
+                    />
+                    Delivery (Uber Parcel)
+                  </label>
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="fulfilment"
+                      value="Pickup"
+                      checked={form.fulfilment === 'Pickup'}
+                      onChange={handleChange}
+                    />
+                    Pickup (Kundanbagh, Begumpet)
+                  </label>
+                </div>
+              </div>
+
+              {form.fulfilment === 'Delivery' && (
+                <div className="form-row">
+                  <label htmlFor="address">Delivery address *</label>
+                  <textarea
+                    id="address"
+                    name="address"
+                    rows={3}
+                    value={form.address}
+                    onChange={handleChange}
+                  />
+                </div>
+              )}
+
+              <div className="form-row">
+                <label htmlFor="notes">Notes (optional)</label>
+                <textarea
+                  id="notes"
+                  name="notes"
+                  rows={2}
+                  value={form.notes}
+                  onChange={handleChange}
+                />
+              </div>
+
+              {/* Honeypot field — hidden from real users. */}
+              <input
+                type="text"
+                name="website"
+                value={form.website}
+                onChange={handleChange}
+                className="honeypot"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+              />
+
+              {status === 'error' && (
+                <p className="order-feedback error">{errorMessage}</p>
+              )}
+
+              <button
+                type="submit"
+                className="order-submit"
+                disabled={status === 'submitting'}
+              >
+                {status === 'submitting' ? 'Submitting...' : 'Submit order'}
+              </button>
+            </form>
+          )}
         </div>
-      </div>
       </main>
       <Footer />
     </div>

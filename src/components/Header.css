@@ -61,7 +61,7 @@
   list-style: none;
   gap: 15px;
   margin: 0;
-  padding: 0 15px 0 0;
+  padding: 0 60px 0 0;
   justify-content: flex-end;
   align-items: center;
 }
@@ -84,7 +84,7 @@
 .nav-menu a {
   font-family: 'Roboto', sans-serif;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1.17em;
   color: #000000;
   text-decoration: none;
@@ -106,40 +106,49 @@
 
   .nav-container {
     display: none;
-    flex-direction: row;
-    width: auto;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
     padding: 0;
-    justify-content: flex-end;
-    margin-left: auto;
+    background-color: #FFFFFF;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+    border-top: 1px solid #eee;
+    z-index: 9;
   }
 
   .nav-container.active {
-    display: flex;
+    display: block;
   }
 
   .menu-toggle {
     display: flex;
-    width: 12px;
-    height: 12px;
+    width: 9px;
+    height: 9px;
   }
 
   .menu-toggle span {
-    height: 1.5px;
+    height: 1px;
   }
 
   .nav-menu ul {
     flex-direction: column;
-    gap: 15px;
-    padding: 0;
+    align-items: flex-start;
+    gap: 0;
+    padding: 8px 0;
   }
-  
+
+  .nav-menu li {
+    width: 100%;
+  }
+
   .social-icon-item {
-    margin: 5px 0;
+    margin: 0;
   }
 
   .nav-menu a {
     font-size: 18px;
-    padding: 8px 0;
+    padding: 12px 20px;
   }
 
 
