@@ -45,7 +45,7 @@ function appendToSheet_(data) {
     sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Orders');
     sheet.appendRow([
       'Timestamp', 'Name', 'Phone', 'Pack size', 'Quantity',
-      'Fulfilment', 'Address', 'Notes',
+      'Fulfilment', 'Address', 'Location link', 'Notes',
     ]);
   }
   sheet.appendRow([
@@ -56,6 +56,7 @@ function appendToSheet_(data) {
     data.quantity || '',
     data.fulfilment || '',
     data.address || '',
+    data.locationLink || '',
     data.notes || '',
   ]);
 
@@ -79,6 +80,7 @@ function sendWhatsApp_(data) {
     'Pack: ' + (data.packSize || '-') + ' x ' + (data.quantity || '-') + '\n' +
     'Fulfilment: ' + (data.fulfilment || '-') + '\n' +
     (data.address ? 'Address: ' + data.address + '\n' : '') +
+    (data.locationLink ? 'Location: ' + data.locationLink + '\n' : '') +
     (data.notes ? 'Notes: ' + data.notes : '');
 
   var url =

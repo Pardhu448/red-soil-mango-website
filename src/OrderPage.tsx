@@ -16,6 +16,7 @@ interface OrderForm {
   quantity: string;
   fulfilment: 'Pickup' | 'Delivery';
   address: string;
+  locationLink: string;
   notes: string;
   // Honeypot field — should stay empty for real users.
   website: string;
@@ -28,6 +29,7 @@ const initialForm: OrderForm = {
   quantity: '1',
   fulfilment: 'Delivery',
   address: '',
+  locationLink: '',
   notes: '',
   website: '',
 };
@@ -226,16 +228,32 @@ const OrderPage: React.FC = () => {
               </div>
 
               {form.fulfilment === 'Delivery' && (
-                <div className="form-row">
-                  <label htmlFor="address">Delivery address *</label>
-                  <textarea
-                    id="address"
-                    name="address"
-                    rows={3}
-                    value={form.address}
-                    onChange={handleChange}
-                  />
-                </div>
+                <>
+                  <div className="form-row">
+                    <label htmlFor="address">Delivery address *</label>
+                    <textarea
+                      id="address"
+                      name="address"
+                      rows={3}
+                      value={form.address}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <label htmlFor="locationLink">
+                      Location link (optional)
+                    </label>
+                    <input
+                      id="locationLink"
+                      name="locationLink"
+                      type="url"
+                      value={form.locationLink}
+                      onChange={handleChange}
+                      placeholder="Google Maps link to your location"
+                    />
+                  </div>
+                </>
               )}
 
               <div className="form-row">
