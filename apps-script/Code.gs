@@ -44,7 +44,7 @@ function appendToSheet_(data) {
   if (!sheet) {
     sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Orders');
     sheet.appendRow([
-      'Timestamp', 'Name', 'Phone', 'Pack size', 'Quantity',
+      'Timestamp', 'Name', 'Phone', 'Variety', 'Pack size', 'Quantity',
       'Fulfilment', 'Address', 'Location link', 'Notes', 'Price/kg',
     ]);
   }
@@ -52,6 +52,7 @@ function appendToSheet_(data) {
     new Date(),
     data.name || '',
     '', // Phone is written separately below as plain text.
+    data.variety || '',
     data.packSize || '',
     data.quantity || '',
     data.fulfilment || '',
@@ -78,6 +79,7 @@ function sendWhatsApp_(data) {
     'New mango order!\n' +
     'Name: ' + (data.name || '-') + '\n' +
     'Phone: ' + (data.phone || '-') + '\n' +
+    'Variety: ' + (data.variety || '-') + '\n' +
     'Pack: ' + (data.packSize || '-') + ' x ' + (data.quantity || '-') + '\n' +
     (data.pricePerKg ? 'Price/kg: ₹' + data.pricePerKg + '\n' : '') +
     'Fulfilment: ' + (data.fulfilment || '-') + '\n' +
