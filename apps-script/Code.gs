@@ -14,6 +14,9 @@
 //   FROM_EMAIL      verified sender address — e.g.
 //                   "Red Soil Mango <orders@yourdomain.com>"
 //   OWNER_EMAIL     where new-order alerts are sent
+//   ORDER_TOKEN     shared secret the website must send with each order.
+//                   When set, requests without a matching token are rejected.
+//                   Must equal the website's REACT_APP_ORDER_TOKEN.
 // -------------------------------------------------------------------------
 
 function getConfig_() {
@@ -22,6 +25,7 @@ function getConfig_() {
     resendApiKey: props.getProperty('RESEND_API_KEY') || '',
     fromEmail: props.getProperty('FROM_EMAIL') || '',
     ownerEmail: props.getProperty('OWNER_EMAIL') || '',
+    orderToken: props.getProperty('ORDER_TOKEN') || '',
   };
 }
 
@@ -36,6 +40,14 @@ function doPost(e) {
     // Ignore bot submissions caught by the honeypot field.
     if (data.website) {
       return jsonResponse_({ result: 'success' });
+    }
+
+    // Reject requests that lack the shared-secret token. Only enforced when
+    // ORDER_TOKEN is configured, so existing deployments keep working until
+    // the property is set on both the script and the website.
+    var orderToken = getConfig_().orderToken;
+    if (orderToken && String(data.token || '') !== orderToken) {
+      return jsonResponse_({ result: 'error', message: 'unauthorized' });
     }
 
     appendToSheet_(data);

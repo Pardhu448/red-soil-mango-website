@@ -8,6 +8,10 @@ import { VARIETIES } from './varieties';
 // Apps Script Web App URL. Set REACT_APP_ORDER_ENDPOINT in a .env file.
 const ORDER_ENDPOINT = process.env.REACT_APP_ORDER_ENDPOINT || '';
 
+// Shared-secret token sent with each order; must match the Apps Script's
+// ORDER_TOKEN script property. Set REACT_APP_ORDER_TOKEN in a .env file.
+const ORDER_TOKEN = process.env.REACT_APP_ORDER_TOKEN || '';
+
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
 interface OrderForm {
@@ -98,7 +102,7 @@ const OrderPage: React.FC = () => {
         method: 'POST',
         // text/plain avoids a CORS preflight against the Apps Script endpoint.
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ ...form, pricePerKg }),
+        body: JSON.stringify({ ...form, pricePerKg, token: ORDER_TOKEN }),
       });
 
       const result = await response.json();

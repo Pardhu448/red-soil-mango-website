@@ -24,6 +24,9 @@ to a Google Sheet and emails you an order notification via Resend.
    - `FROM_EMAIL` = a verified sender, e.g.
      `Red Soil Mango <orders@yourdomain.com>` (or `onboarding@resend.dev`)
    - `OWNER_EMAIL` = the address that should receive new-order alerts
+   - `ORDER_TOKEN` = a shared secret of your choosing (a long random string).
+     Orders that do not send this exact token are rejected. Use the **same**
+     value for the website's `REACT_APP_ORDER_TOKEN` (step 4 below).
 5. Save.
 
 ## 3. Deploy as a Web App
@@ -44,11 +47,18 @@ Create a file named `.env` in the project root with:
 
 ```
 REACT_APP_ORDER_ENDPOINT=https://script.google.com/macros/s/XXXXXXXX/exec
+REACT_APP_ORDER_TOKEN=the-same-long-random-string-as-ORDER_TOKEN
 ```
 
-Use the Web app URL from step 3. Restart `npm start` after creating `.env`.
-For the App Engine build, the variable must be present at `npm run build`
-time. Do **not** commit `.env` (the repo `.gitignore` already excludes it).
+Use the Web app URL from step 3, and the **same** token value you set for the
+`ORDER_TOKEN` script property. Restart `npm start` after creating `.env`. For
+the App Engine build, the variables must be present at `npm run build` time.
+Do **not** commit `.env` (the repo `.gitignore` already excludes it).
+
+> Note: `REACT_APP_*` values are baked into the public JavaScript bundle, so
+> the token is **not truly secret** — it blocks automated/drive-by abuse of the
+> endpoint but a determined attacker can read it from the bundle. For stronger
+> protection add a CAPTCHA or proxy submissions through a server.
 
 ## Emailing individual customers
 
