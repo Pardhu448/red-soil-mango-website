@@ -60,10 +60,11 @@ function appendToSheet_(data) {
   // Make sure the customer-messaging columns ("Send?", "Messages") exist even
   // on a sheet created before this feature, so every order row shows them.
   getColumnMap_(sheet);
-  sheet.appendRow([
+
+  var row = [
     new Date(),
     data.name || '',
-    '', // Phone is written separately below as plain text.
+    String(data.phone || ''),
     data.email || '',
     data.variety || '',
     data.packSize || '',
@@ -73,15 +74,21 @@ function appendToSheet_(data) {
     data.locationLink || '',
     data.notes || '',
     data.pricePerKg || '',
-  ]);
-  // appendRow fills only the first 12 columns; the "Send?" and "Messages"
-  // columns stay blank for a new order, ready for the owner to fill in.
+  ];
 
-  // A phone like "+91 ..." starts with "+", which Sheets would treat as a
-  // formula ("Formula parse error"). Force the cell to plain-text format.
-  var phoneCell = sheet.getRange(sheet.getLastRow(), 3);
-  phoneCell.setNumberFormat('@');
-  phoneCell.setValue(String(data.phone || ''));
+  var targetRow = sheet.getLastRow() + 1;
+
+  // Force every text column (Name..Price/kg) to plain-text format BEFORE the
+  // values are written. This neutralises spreadsheet formula injection: a
+  // submitted value such as "=IMPORTRANGE(...)" or "=HYPERLINK(...)" is stored
+  // as literal text and never evaluated when the owner opens the sheet, so it
+  // cannot exfiltrate other customers' data. It also stops phone numbers
+  // ("+91 ...") triggering a "Formula parse error".
+  // Column 1 (Timestamp) is left as-is so it stays a real date value.
+  sheet.getRange(targetRow, 2, 1, row.length - 1).setNumberFormat('@');
+  sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
+  // The "Send?" and "Messages" columns stay blank for a new order, ready for
+  // the owner to fill in.
 }
 
 function sendOwnerNotification_(data) {
