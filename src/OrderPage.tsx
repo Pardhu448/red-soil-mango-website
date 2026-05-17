@@ -8,19 +8,12 @@ import { VARIETIES } from './varieties';
 // Apps Script Web App URL. Set REACT_APP_ORDER_ENDPOINT in a .env file.
 const ORDER_ENDPOINT = process.env.REACT_APP_ORDER_ENDPOINT || '';
 
-// Comma-separated 2026 price values from REACT_APP_PRICE_2026 (first value is
-// the price per kg).
-const PRICE_2026 = (process.env.REACT_APP_PRICE_2026 || '')
-  .split(',')
-  .map((v) => v.trim())
-  .filter(Boolean);
-const PRICE_PER_KG = PRICE_2026[0] || '';
-
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
 interface OrderForm {
   name: string;
   phone: string;
+  email: string;
   variety: string;
   packSize: string;
   quantity: string;
@@ -35,6 +28,7 @@ interface OrderForm {
 const initialForm: OrderForm = {
   name: '',
   phone: '',
+  email: '',
   variety: VARIETIES[0].name,
   packSize: '5 kg',
   quantity: '1',
@@ -80,6 +74,12 @@ const OrderPage: React.FC = () => {
       return;
     }
 
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setStatus('error');
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
     if (form.fulfilment === 'Delivery' && !form.address.trim()) {
       setStatus('error');
       setErrorMessage('Please enter a delivery address.');
@@ -89,12 +89,16 @@ const OrderPage: React.FC = () => {
     setStatus('submitting');
     setErrorMessage('');
 
+    // Price per kg comes from the selected variety in varieties.ts.
+    const selectedVariety = VARIETIES.find((v) => v.name === form.variety);
+    const pricePerKg = selectedVariety ? selectedVariety.price : '';
+
     try {
       const response = await fetch(ORDER_ENDPOINT, {
         method: 'POST',
         // text/plain avoids a CORS preflight against the Apps Script endpoint.
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ ...form, pricePerKg: PRICE_PER_KG }),
+        body: JSON.stringify({ ...form, pricePerKg }),
       });
 
       const result = await response.json();
@@ -179,8 +183,8 @@ const OrderPage: React.FC = () => {
             <div className="order-feedback success">
               <h3>Thank you for your order!</h3>
               <p>
-                We have received your request and will reach out on WhatsApp to
-                confirm the details.
+                We have received your request and will update you over an
+                email or WhatsApp to confirm the details.
               </p>
               <button
                 type="button"
@@ -222,6 +226,18 @@ const OrderPage: React.FC = () => {
                     Please enter a valid 10-digit mobile number.
                   </span>
                 )}
+              </div>
+
+              <div className="form-row">
+                <label htmlFor="email">Email (optional)</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="So we can email you order updates"
+                />
               </div>
 
               <div className="form-row">
