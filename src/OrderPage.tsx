@@ -124,8 +124,8 @@ const OrderPage: React.FC = () => {
         <section className="varieties-section">
           <h2>Our Mango Varieties</h2>
           <p className="varieties-intro">
-            All varieties are naturally ripened. Prices are per kg for the 2026
-            season.
+            Mangoes are from Zaheerabad area and are naturally ripened with hay
+            and gliricidia leaves. Prices are per kg for the 2026 season.
           </p>
           <div className="varieties-table-wrap">
             <table className="varieties-table">
