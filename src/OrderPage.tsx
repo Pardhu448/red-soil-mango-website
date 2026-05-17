@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import './OrderPage.css';
 import whatsappIcon from './images/whatsapp-icon.svg';
+import { VARIETIES } from './varieties';
 
 // Apps Script Web App URL. Set REACT_APP_ORDER_ENDPOINT in a .env file.
 const ORDER_ENDPOINT = process.env.REACT_APP_ORDER_ENDPOINT || '';
@@ -20,6 +21,7 @@ type Status = 'idle' | 'submitting' | 'success' | 'error';
 interface OrderForm {
   name: string;
   phone: string;
+  variety: string;
   packSize: string;
   quantity: string;
   fulfilment: 'Pickup' | 'Delivery';
@@ -33,6 +35,7 @@ interface OrderForm {
 const initialForm: OrderForm = {
   name: '',
   phone: '',
+  variety: VARIETIES[0].name,
   packSize: '5 kg',
   quantity: '1',
   fulfilment: 'Delivery',
@@ -118,14 +121,47 @@ const OrderPage: React.FC = () => {
       <main className="order-content">
         <h1>Order Mangoes</h1>
 
-        {PRICE_PER_KG && (
-          <div className="price-section">
-            <h2>2026 Price</h2>
-            <p className="price-amount">
-              ₹{PRICE_PER_KG} <span className="price-unit">per kg</span>
-            </p>
+        <section className="varieties-section">
+          <h2>Our Mango Varieties</h2>
+          <p className="varieties-intro">
+            All varieties are naturally ripened. Prices are per kg for the 2026
+            season.
+          </p>
+          <div className="varieties-table-wrap">
+            <table className="varieties-table">
+              <thead>
+                <tr>
+                  <th scope="col">Mango</th>
+                  <th scope="col">Price</th>
+                  <th scope="col" className="variety-description-col">
+                    Description
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {VARIETIES.map((variety) => (
+                  <tr key={variety.name}>
+                    <td className="variety-cell">
+                      <img
+                        className="variety-thumb"
+                        src={`${process.env.PUBLIC_URL}/varieties/${variety.image}`}
+                        alt={variety.name}
+                      />
+                      <span className="variety-name">{variety.name}</span>
+                    </td>
+                    <td className="variety-price">
+                      ₹{variety.price}
+                      <span className="price-unit">per kg</span>
+                    </td>
+                    <td className="variety-description variety-description-col">
+                      {variety.description}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+        </section>
 
         <div className="order-section">
           <div className="order-method">
@@ -186,6 +222,23 @@ const OrderPage: React.FC = () => {
                     Please enter a valid 10-digit mobile number.
                   </span>
                 )}
+              </div>
+
+              <div className="form-row">
+                <label htmlFor="variety">Mango variety *</label>
+                <select
+                  id="variety"
+                  name="variety"
+                  value={form.variety}
+                  onChange={handleChange}
+                  required
+                >
+                  {VARIETIES.map((variety) => (
+                    <option key={variety.name} value={variety.name}>
+                      {variety.name} — ₹{variety.price}/kg
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-grid">
