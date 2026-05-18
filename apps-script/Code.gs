@@ -17,6 +17,10 @@
 //   ORDER_TOKEN     shared secret the website must send with each order.
 //                   When set, requests without a matching token are rejected.
 //                   Must equal the website's REACT_APP_ORDER_TOKEN.
+//   TURNSTILE_SECRET Cloudflare Turnstile secret key. When set, each order
+//                   must include a Turnstile token that Cloudflare confirms
+//                   as valid. Pairs with the website's
+//                   REACT_APP_TURNSTILE_SITE_KEY.
 // -------------------------------------------------------------------------
 
 function getConfig_() {
@@ -26,6 +30,7 @@ function getConfig_() {
     fromEmail: props.getProperty('FROM_EMAIL') || '',
     ownerEmail: props.getProperty('OWNER_EMAIL') || '',
     orderToken: props.getProperty('ORDER_TOKEN') || '',
+    turnstileSecret: props.getProperty('TURNSTILE_SECRET') || '',
   };
 }
 
@@ -42,12 +47,21 @@ function doPost(e) {
       return jsonResponse_({ result: 'success' });
     }
 
+    var config = getConfig_();
+
     // Reject requests that lack the shared-secret token. Only enforced when
     // ORDER_TOKEN is configured, so existing deployments keep working until
     // the property is set on both the script and the website.
-    var orderToken = getConfig_().orderToken;
-    if (orderToken && String(data.token || '') !== orderToken) {
+    if (config.orderToken &&
+        String(data.token || '') !== config.orderToken) {
       return jsonResponse_({ result: 'error', message: 'unauthorized' });
+    }
+
+    // Reject requests that fail the CAPTCHA. Only enforced when
+    // TURNSTILE_SECRET is configured.
+    if (config.turnstileSecret &&
+        !verifyCaptcha_(config.turnstileSecret, data.captchaToken)) {
+      return jsonResponse_({ result: 'error', message: 'captcha failed' });
     }
 
     appendToSheet_(data);
@@ -56,6 +70,27 @@ function doPost(e) {
     return jsonResponse_({ result: 'success' });
   } catch (err) {
     return jsonResponse_({ result: 'error', message: String(err) });
+  }
+}
+
+/**
+ * Verifies a Cloudflare Turnstile token via the siteverify endpoint.
+ * Returns true only when Cloudflare confirms the token is valid.
+ */
+function verifyCaptcha_(secret, token) {
+  if (!token) {
+    return false;
+  }
+  var response = UrlFetchApp.fetch(
+    'https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'post',
+      payload: { secret: secret, response: String(token) },
+      muteHttpExceptions: true,
+    });
+  try {
+    return JSON.parse(response.getContentText()).success === true;
+  } catch (err) {
+    return false;
   }
 }
 

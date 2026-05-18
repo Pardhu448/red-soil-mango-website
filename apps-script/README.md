@@ -13,6 +13,13 @@ to a Google Sheet and emails you an order notification via Resend.
      your own Resend account.
 3. Create an **API key** under `API Keys` (starts with `re_`). Copy it.
 
+## 1b. Set up Cloudflare Turnstile (CAPTCHA)
+
+1. In the [Cloudflare dashboard](https://dash.cloudflare.com/) go to
+   **Turnstile** and add a site (your domain; add `localhost` too for local
+   testing).
+2. Copy the **Site Key** (public) and **Secret Key** (private).
+
 ## 2. Create the Google Sheet + Apps Script
 
 1. Create a new Google Sheet (this is where orders are logged).
@@ -27,6 +34,8 @@ to a Google Sheet and emails you an order notification via Resend.
    - `ORDER_TOKEN` = a shared secret of your choosing (a long random string).
      Orders that do not send this exact token are rejected. Use the **same**
      value for the website's `REACT_APP_ORDER_TOKEN` (step 4 below).
+   - `TURNSTILE_SECRET` = the Turnstile **Secret Key** from step 1b. Orders
+     without a valid CAPTCHA token are rejected.
 5. Save.
 
 ## 3. Deploy as a Web App
@@ -48,12 +57,19 @@ Create a file named `.env` in the project root with:
 ```
 REACT_APP_ORDER_ENDPOINT=https://script.google.com/macros/s/XXXXXXXX/exec
 REACT_APP_ORDER_TOKEN=the-same-long-random-string-as-ORDER_TOKEN
+REACT_APP_TURNSTILE_SITE_KEY=your-turnstile-site-key
 ```
 
-Use the Web app URL from step 3, and the **same** token value you set for the
-`ORDER_TOKEN` script property. Restart `npm start` after creating `.env`. For
-the App Engine build, the variables must be present at `npm run build` time.
-Do **not** commit `.env` (the repo `.gitignore` already excludes it).
+Use the Web app URL from step 3, the **same** token value you set for the
+`ORDER_TOKEN` script property, and the Turnstile **Site Key** from step 1b.
+Restart `npm start` after creating `.env`. For the App Engine build, the
+variables must be present at `npm run build` time. Do **not** commit `.env`
+(the repo `.gitignore` already excludes it).
+
+> The order form shows a Turnstile "I am human" widget when
+> `REACT_APP_TURNSTILE_SITE_KEY` is set, and the script rejects orders that
+> fail verification when `TURNSTILE_SECRET` is set. Leave both unset to skip
+> the CAPTCHA entirely.
 
 > Note: `REACT_APP_*` values are baked into the public JavaScript bundle, so
 > the token is **not truly secret** — it blocks automated/drive-by abuse of the

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import './OrderPage.css';
@@ -11,6 +11,12 @@ const ORDER_ENDPOINT = process.env.REACT_APP_ORDER_ENDPOINT || '';
 // Shared-secret token sent with each order; must match the Apps Script's
 // ORDER_TOKEN script property. Set REACT_APP_ORDER_TOKEN in a .env file.
 const ORDER_TOKEN = process.env.REACT_APP_ORDER_TOKEN || '';
+
+// Cloudflare Turnstile site key. Set REACT_APP_TURNSTILE_SITE_KEY in a .env
+// file. When empty, the CAPTCHA step is skipped.
+const TURNSTILE_SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY || '';
+const TURNSTILE_SRC =
+  'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -47,6 +53,64 @@ const OrderPage: React.FC = () => {
   const [form, setForm] = useState<OrderForm>(initialForm);
   const [status, setStatus] = useState<Status>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const captchaRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  // Load the Turnstile script and render the widget once.
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) {
+      return;
+    }
+
+    const renderWidget = () => {
+      const turnstile = (window as any).turnstile;
+      if (!turnstile || !captchaRef.current || widgetIdRef.current !== null) {
+        return;
+      }
+      widgetIdRef.current = turnstile.render(captchaRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token: string) => setCaptchaToken(token),
+        'expired-callback': () => setCaptchaToken(''),
+        'error-callback': () => setCaptchaToken(''),
+      });
+    };
+
+    if ((window as any).turnstile) {
+      renderWidget();
+      return;
+    }
+
+    let script = document.querySelector<HTMLScriptElement>(
+      `script[src="${TURNSTILE_SRC}"]`
+    );
+    if (!script) {
+      script = document.createElement('script');
+      script.src = TURNSTILE_SRC;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+    script.addEventListener('load', renderWidget);
+
+    return () => {
+      script?.removeEventListener('load', renderWidget);
+      const turnstile = (window as any).turnstile;
+      if (turnstile && widgetIdRef.current !== null) {
+        turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+    };
+  }, []);
+
+  // Turnstile tokens are single-use — clear and re-issue after each attempt.
+  const resetCaptcha = () => {
+    setCaptchaToken('');
+    const turnstile = (window as any).turnstile;
+    if (turnstile && widgetIdRef.current !== null) {
+      turnstile.reset(widgetIdRef.current);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -90,6 +154,12 @@ const OrderPage: React.FC = () => {
       return;
     }
 
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      setStatus('error');
+      setErrorMessage('Please complete the "I am human" verification.');
+      return;
+    }
+
     setStatus('submitting');
     setErrorMessage('');
 
@@ -102,7 +172,12 @@ const OrderPage: React.FC = () => {
         method: 'POST',
         // text/plain avoids a CORS preflight against the Apps Script endpoint.
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ ...form, pricePerKg, token: ORDER_TOKEN }),
+        body: JSON.stringify({
+          ...form,
+          pricePerKg,
+          token: ORDER_TOKEN,
+          captchaToken,
+        }),
       });
 
       const result = await response.json();
@@ -117,6 +192,9 @@ const OrderPage: React.FC = () => {
       setErrorMessage(
         'Something went wrong submitting your order. Please try again or contact us on WhatsApp.'
       );
+    } finally {
+      // The token was consumed by this attempt; get a fresh one either way.
+      resetCaptcha();
     }
   };
 
@@ -369,6 +447,12 @@ const OrderPage: React.FC = () => {
                 autoComplete="off"
                 aria-hidden="true"
               />
+
+              {TURNSTILE_SITE_KEY && (
+                <div className="form-row">
+                  <div ref={captchaRef} className="turnstile-widget" />
+                </div>
+              )}
 
               {status === 'error' && (
                 <p className="order-feedback error">{errorMessage}</p>
