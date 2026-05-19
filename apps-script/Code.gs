@@ -94,46 +94,62 @@ function verifyCaptcha_(secret, token) {
   }
 }
 
+// Data columns of an order row, in the order used when a fresh sheet is
+// created. Existing rows are written by HEADER NAME (see appendToSheet_), so
+// the script keeps placing each value correctly even if a sheet's columns are
+// in a different order — e.g. an older sheet created before "Email" existed.
+var ORDER_COLUMNS = [
+  'Timestamp', 'Name', 'Phone', 'Email', 'Variety', 'Pack size',
+  'Quantity', 'Fulfilment', 'Address', 'Location link', 'Notes', 'Price/kg',
+];
+
 function appendToSheet_(data) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Orders');
   if (!sheet) {
     sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Orders');
-    sheet.appendRow([
-      'Timestamp', 'Name', 'Phone', 'Email', 'Variety', 'Pack size',
-      'Quantity', 'Fulfilment', 'Address', 'Location link', 'Notes',
-      'Price/kg', FLAG_HEADER, MESSAGES_HEADER,
-    ]);
+    sheet.appendRow(ORDER_COLUMNS.concat([FLAG_HEADER, MESSAGES_HEADER]));
   }
-  // Make sure the customer-messaging columns ("Send?", "Messages") exist even
-  // on a sheet created before this feature, so every order row shows them.
-  getColumnMap_(sheet);
+  // Locate every column by header name, creating any that are missing — the
+  // customer-messaging columns ("Send?", "Messages") and, on an older sheet,
+  // the "Email" column. This is what keeps each value in the right column.
+  var cols = ensureColumns_(sheet, getColumnMap_(sheet), ORDER_COLUMNS);
 
-  var row = [
-    new Date(),
-    data.name || '',
-    String(data.phone || ''),
-    data.email || '',
-    data.variety || '',
-    data.packSize || '',
-    data.quantity || '',
-    data.fulfilment || '',
-    data.address || '',
-    data.locationLink || '',
-    data.notes || '',
-    data.pricePerKg || '',
-  ];
+  var values = {
+    'Timestamp': new Date(),
+    'Name': data.name || '',
+    'Phone': String(data.phone || ''),
+    'Email': data.email || '',
+    'Variety': data.variety || '',
+    'Pack size': data.packSize || '',
+    'Quantity': data.quantity || '',
+    'Fulfilment': data.fulfilment || '',
+    'Address': data.address || '',
+    'Location link': data.locationLink || '',
+    'Notes': data.notes || '',
+    'Price/kg': data.pricePerKg || '',
+  };
 
   var targetRow = sheet.getLastRow() + 1;
+  var lastCol = sheet.getLastColumn();
+  var row = [];
+  for (var c = 0; c < lastCol; c++) {
+    row.push('');
+  }
+  ORDER_COLUMNS.forEach(function (header) {
+    row[cols[header] - 1] = values[header];
+  });
 
-  // Force every text column (Name..Price/kg) to plain-text format BEFORE the
-  // values are written. This neutralises spreadsheet formula injection: a
-  // submitted value such as "=IMPORTRANGE(...)" or "=HYPERLINK(...)" is stored
-  // as literal text and never evaluated when the owner opens the sheet, so it
-  // cannot exfiltrate other customers' data. It also stops phone numbers
-  // ("+91 ...") triggering a "Formula parse error".
-  // Column 1 (Timestamp) is left as-is so it stays a real date value.
-  sheet.getRange(targetRow, 2, 1, row.length - 1).setNumberFormat('@');
-  sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
+  // Force the whole row to plain-text format BEFORE the values are written.
+  // This neutralises spreadsheet formula injection: a submitted value such as
+  // "=IMPORTRANGE(...)" or "=HYPERLINK(...)" is stored as literal text and
+  // never evaluated when the owner opens the sheet, so it cannot exfiltrate
+  // other customers' data. It also stops phone numbers ("+91 ...") triggering
+  // a "Formula parse error". The Timestamp column is then reset to a date
+  // format so it stays a real date value.
+  sheet.getRange(targetRow, 1, 1, lastCol).setNumberFormat('@');
+  sheet.getRange(targetRow, cols['Timestamp'])
+    .setNumberFormat('yyyy-mm-dd hh:mm:ss');
+  sheet.getRange(targetRow, 1, 1, lastCol).setValues([row]);
   // The "Send?" and "Messages" columns stay blank for a new order, ready for
   // the owner to fill in.
 }
@@ -245,6 +261,7 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Mango Tools')
     .addItem('Send pending customer emails', 'sendPendingEmails')
+    .addItem('Realign legacy order rows', 'realignLegacyRows')
     .addToUi();
 }
 
@@ -261,7 +278,16 @@ function getColumnMap_(sheet) {
       map[headers[i]] = i + 1;
     }
   }
-  [MESSAGES_HEADER, FLAG_HEADER].forEach(function (name) {
+  return ensureColumns_(sheet, map, [MESSAGES_HEADER, FLAG_HEADER]);
+}
+
+/**
+ * Ensures each header in `names` exists in the sheet, appending any that are
+ * missing as new columns at the end. Updates and returns the column map.
+ */
+function ensureColumns_(sheet, map, names) {
+  var lastCol = sheet.getLastColumn();
+  names.forEach(function (name) {
     if (!map[name]) {
       lastCol++;
       sheet.getRange(1, lastCol).setValue(name);
@@ -351,6 +377,88 @@ function sendPendingEmails() {
     summary += '\nFailed:\n' + failed.join('\n');
   }
   ui.alert(summary);
+}
+
+/**
+ * One-time cleanup for sheets created before the "Email" column existed.
+ *
+ * On such a sheet, every order written after the Email field was added went
+ * in with all values from "Email" onward shifted one column to the right — so
+ * the "Location link" column holds the address, "Address" holds the
+ * fulfilment, and the price spilled into the "Messages" column. Each affected
+ * row still holds its 12 values in the original ORDER_COLUMNS order in columns
+ * 1-12, so this re-reads those and rewrites them under the correct headers.
+ *
+ * A row is treated as shifted when its "Messages" cell holds a number — the
+ * price that spilled there. Correctly-aligned rows (pre-Email orders and any
+ * order written after the column-by-name fix) have an empty "Messages" cell
+ * and are skipped, so the cleanup is safe to run more than once. Run it from
+ * Mango Tools > Realign legacy order rows.
+ */
+function realignLegacyRows() {
+  var ui = SpreadsheetApp.getUi();
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Orders');
+  if (!sheet || sheet.getLastRow() < 2) {
+    ui.alert('No orders found in the "Orders" sheet.');
+    return;
+  }
+
+  var cols = ensureColumns_(sheet, getColumnMap_(sheet), ORDER_COLUMNS);
+  var msgCol = cols[MESSAGES_HEADER];
+  var firstRow = 2;
+  var numRows = sheet.getLastRow() - 1;
+  var lastCol = sheet.getLastColumn();
+  var data = sheet.getRange(firstRow, 1, numRows, lastCol).getValues();
+
+  var shifted = [];
+  for (var i = 0; i < numRows; i++) {
+    var msgStr = String(data[i][msgCol - 1]).trim();
+    // A shifted row has the spilled price sitting in the "Messages" column.
+    if (msgStr !== '' && !isNaN(Number(msgStr))) {
+      shifted.push(firstRow + i);
+    }
+  }
+
+  if (!shifted.length) {
+    ui.alert('No shifted rows found — nothing to realign.');
+    return;
+  }
+
+  var answer = ui.alert(
+    'Realign legacy rows',
+    'Found ' + shifted.length + ' order row(s) with shifted columns ' +
+      '(row(s) ' + shifted.join(', ') + ').\n\n' +
+      'Realign them now? Each row is rewritten so every value lands under ' +
+      'the correct header. Consider making a copy of the sheet first.',
+    ui.ButtonSet.YES_NO);
+  if (answer !== ui.Button.YES) {
+    return;
+  }
+
+  for (var j = 0; j < shifted.length; j++) {
+    var row = shifted[j];
+    var current = sheet.getRange(row, 1, 1, lastCol).getValues()[0];
+    // Columns 1-12 still hold the 12 values in ORDER_COLUMNS order.
+    var legacy = current.slice(0, ORDER_COLUMNS.length);
+
+    var newRow = current.slice();
+    // Blank the originally-written range so spillover (e.g. the price left in
+    // the "Messages" column) does not survive. Columns outside this range —
+    // notably "Send?" — keep whatever the owner entered.
+    for (var k = 0; k < ORDER_COLUMNS.length; k++) {
+      newRow[k] = '';
+    }
+    ORDER_COLUMNS.forEach(function (header, idx) {
+      newRow[cols[header] - 1] = legacy[idx];
+    });
+
+    sheet.getRange(row, 1, 1, lastCol).setNumberFormat('@');
+    sheet.getRange(row, cols['Timestamp'])
+      .setNumberFormat('yyyy-mm-dd hh:mm:ss');
+    sheet.getRange(row, 1, 1, lastCol).setValues([newRow]);
+  }
+
+  ui.alert('Realigned ' + shifted.length + ' row(s).');
 }
 
 function jsonResponse_(obj) {
