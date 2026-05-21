@@ -64,8 +64,13 @@ function doPost(e) {
       return jsonResponse_({ result: 'error', message: 'captcha failed' });
     }
 
-    appendToSheet_(data);
-    sendOwnerNotification_(data);
+    if (data.kind === 'feedback') {
+      appendFeedbackToSheet_(data);
+      sendFeedbackNotification_(data);
+    } else {
+      appendToSheet_(data);
+      sendOwnerNotification_(data);
+    }
 
     return jsonResponse_({ result: 'success' });
   } catch (err) {
@@ -152,6 +157,79 @@ function appendToSheet_(data) {
   sheet.getRange(targetRow, 1, 1, lastCol).setValues([row]);
   // The "Send?" and "Messages" columns stay blank for a new order, ready for
   // the owner to fill in.
+}
+
+// Columns for a feedback row, in the order used when a fresh sheet is created.
+var FEEDBACK_COLUMNS = [
+  'Timestamp', 'Phone', 'Noticed difference', 'Sweeter than earlier',
+  'Would buy 80% ripened', 'Suggestions',
+];
+
+function appendFeedbackToSheet_(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Feedback');
+  if (!sheet) {
+    sheet = ss.insertSheet('Feedback');
+    sheet.appendRow(FEEDBACK_COLUMNS);
+  }
+  var cols = ensureColumns_(sheet, getFeedbackColumnMap_(sheet),
+    FEEDBACK_COLUMNS);
+
+  var values = {
+    'Timestamp': new Date(),
+    'Phone': String(data.phone || ''),
+    'Noticed difference': data.noticedDifference || '',
+    'Sweeter than earlier': data.sweeter || '',
+    'Would buy 80% ripened': data.wouldBuyUnripe || '',
+    'Suggestions': data.suggestions || '',
+  };
+
+  var targetRow = sheet.getLastRow() + 1;
+  var lastCol = sheet.getLastColumn();
+  var row = [];
+  for (var c = 0; c < lastCol; c++) {
+    row.push('');
+  }
+  FEEDBACK_COLUMNS.forEach(function (header) {
+    row[cols[header] - 1] = values[header];
+  });
+
+  // Same anti-formula-injection treatment as the Orders sheet.
+  sheet.getRange(targetRow, 1, 1, lastCol).setNumberFormat('@');
+  sheet.getRange(targetRow, cols['Timestamp'])
+    .setNumberFormat('yyyy-mm-dd hh:mm:ss');
+  sheet.getRange(targetRow, 1, 1, lastCol).setValues([row]);
+}
+
+function getFeedbackColumnMap_(sheet) {
+  var lastCol = sheet.getLastColumn();
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  var map = {};
+  for (var i = 0; i < headers.length; i++) {
+    if (headers[i] !== '') {
+      map[headers[i]] = i + 1;
+    }
+  }
+  return map;
+}
+
+function sendFeedbackNotification_(data) {
+  var config = getConfig_();
+  if (!isConfigured_(config)) {
+    return;
+  }
+
+  var subject = 'New mango feedback — ' + (data.phone || 'Unknown');
+  var body =
+    'New feedback received!\n\n' +
+    'Phone: ' + (data.phone || '-') + '\n' +
+    'Noticed chemical vs natural difference: ' +
+      (data.noticedDifference || '-') + '\n' +
+    'Sweeter than earlier mangoes: ' + (data.sweeter || '-') + '\n' +
+    'Would buy 80% ripened: ' + (data.wouldBuyUnripe || '-') + '\n' +
+    (data.suggestions ? 'Suggestions: ' + data.suggestions : '');
+
+  sendEmail_(config, config.ownerEmail, subject, body);
 }
 
 function sendOwnerNotification_(data) {
