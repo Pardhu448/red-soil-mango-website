@@ -340,7 +340,72 @@ function onOpen() {
     .createMenu('Mango Tools')
     .addItem('Send pending customer emails', 'sendPendingEmails')
     .addItem('Realign legacy order rows', 'realignLegacyRows')
+    .addItem('Sort Delivery sheet by DeliveryOrder', 'sortDeliverySheet')
     .addToUi();
+}
+
+/**
+ * Sorts every row in the "Delivery" sheet by the "DeliveryOrder" column,
+ * ascending. Blank DeliveryOrder cells sink to the bottom. Numeric values
+ * sort numerically; non-numeric values fall back to a string compare.
+ *
+ * Run via Mango Tools > Sort Delivery sheet by DeliveryOrder.
+ */
+function sortDeliverySheet() {
+  var ui = SpreadsheetApp.getUi();
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Delivery');
+  if (!sheet) {
+    ui.alert('No "Delivery" sheet found.');
+    return;
+  }
+  if (sheet.getLastRow() < 2) {
+    ui.alert('Delivery sheet is empty — nothing to sort.');
+    return;
+  }
+
+  var lastCol = sheet.getLastColumn();
+  var headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  var sortCol = 0;
+  for (var i = 0; i < headers.length; i++) {
+    if (headers[i] === 'DeliveryOrder') {
+      sortCol = i + 1;
+      break;
+    }
+  }
+  if (!sortCol) {
+    ui.alert('No "DeliveryOrder" column found in the Delivery sheet.');
+    return;
+  }
+
+  var numRows = sheet.getLastRow() - 1;
+  var range = sheet.getRange(2, 1, numRows, lastCol);
+  var rows = range.getValues();
+
+  // Stable, blanks-last sort. Numeric values compared numerically when both
+  // sides parse as numbers; otherwise fall back to string compare so mixed
+  // values still sort sensibly.
+  var indexed = rows.map(function (row, idx) {
+    return { row: row, idx: idx, key: row[sortCol - 1] };
+  });
+  indexed.sort(function (a, b) {
+    var aBlank = a.key === '' || a.key === null;
+    var bBlank = b.key === '' || b.key === null;
+    if (aBlank && bBlank) return a.idx - b.idx;
+    if (aBlank) return 1;
+    if (bBlank) return -1;
+    var an = Number(a.key);
+    var bn = Number(b.key);
+    if (!isNaN(an) && !isNaN(bn)) {
+      return an - bn || a.idx - b.idx;
+    }
+    var as = String(a.key);
+    var bs = String(b.key);
+    if (as < bs) return -1;
+    if (as > bs) return 1;
+    return a.idx - b.idx;
+  });
+
+  range.setValues(indexed.map(function (e) { return e.row; }));
 }
 
 /**
