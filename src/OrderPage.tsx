@@ -27,7 +27,7 @@ interface OrderForm {
   variety: string;
   packSize: string;
   quantity: string;
-  fulfilment: 'Pickup' | 'Delivery';
+  fulfilment: 'Delivery' | 'Pickup - Begumpet' | 'Pickup - Buvva Bandi (Tellapur)';
   address: string;
   locationLink: string;
   notes: string;
@@ -349,7 +349,6 @@ const OrderPage: React.FC = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="3 kg">3 kg</option>
                     <option value="5 kg">5 kg</option>
                     <option value="10 kg">10 kg</option>
                   </select>
@@ -386,11 +385,21 @@ const OrderPage: React.FC = () => {
                     <input
                       type="radio"
                       name="fulfilment"
-                      value="Pickup"
-                      checked={form.fulfilment === 'Pickup'}
+                      value="Pickup - Begumpet"
+                      checked={form.fulfilment === 'Pickup - Begumpet'}
                       onChange={handleChange}
                     />
                     Pickup (Kundanbagh, Begumpet)
+                  </label>
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="fulfilment"
+                      value="Pickup - Buvva Bandi (Tellapur)"
+                      checked={form.fulfilment === 'Pickup - Buvva Bandi (Tellapur)'}
+                      onChange={handleChange}
+                    />
+                    Pickup (Buvva Bandi, Tellapur)
                   </label>
                 </div>
               </div>
